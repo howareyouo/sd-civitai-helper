@@ -1,0 +1,265 @@
+'use strict'
+
+// send msg to python side by filling a hidden text box
+// then will click a button to trigger an action
+// msg is an object, not a string, will be stringify in this function
+function send_ch_py_msg(id, msg) {
+    // Get hidden components of extension
+    let btn = app.getElementById(id)
+    if (!btn) return
+
+    // Fill the message box
+    let js_msg_txtbox = $('#ch_js_msg_txtbox textarea')
+    if (js_msg_txtbox && msg) {
+        js_msg_txtbox.value = JSON.stringify(msg)
+        updateInput(js_msg_txtbox)
+    }
+
+    // Click the hidden button
+    btn.click()
+}
+
+// get msg from python side from a hidden textbox
+// normally this is an old msg, need to wait for a new msg
+function get_ch_py_msg() {
+    let py_msg_txtbox = $('#ch_py_msg_txtbox textarea')
+    return py_msg_txtbox?.value
+}
+
+// get msg from python side from a hidden textbox
+// it will try once in every sencond, until it reach the max try times
+function get_new_ch_py_msg(max_count = 9) {
+    return new Promise((resolve, reject) => {
+        let msg_txtbox = $('#ch_py_msg_txtbox textarea')
+        let new_msg = ''
+        let count = 0, interval = setInterval(() => {
+            if (msg_txtbox && msg_txtbox.value)
+                new_msg = msg_txtbox.value
+            if (new_msg || ++count > max_count) {
+                clearInterval(interval)
+                // clear msg in both sides (client & server)
+                msg_txtbox.value = ''
+                updateInput(msg_txtbox)
+                if (new_msg)
+                    resolve(new_msg)
+                else
+                    reject('')
+            }
+        }, 333)
+    })
+}
+
+function getActivePrompt(neg) {
+    let tab = uiCurrentTab.innerText
+    if (neg) tab += '_neg'
+    return get_uiCurrentTabContent().querySelector(`#${tab}_prompt textarea`)
+}
+
+// button's click function
+async function open_model_url(event, model_type, search_term) {
+    event.stopPropagation()
+    event.preventDefault()
+    try {
+        send_ch_py_msg('ch_js_open_url_btn', {
+            action: 'open_url',
+            search_term,
+            model_type
+        })
+        let new_py_msg = await get_new_ch_py_msg();
+        if (new_py_msg) {
+            const py_msg_json = JSON.parse(new_py_msg);
+            if (py_msg_json && py_msg_json.content && py_msg_json.content.url) {
+                open(py_msg_json.content.url, '_blank')
+            }
+        }
+    } catch (e) { }
+}
+
+function add_trigger_words(event, model_type, search_term) {
+    send_ch_py_msg('ch_js_add_trigger_words_btn', {
+        'action': 'add_trigger_words',
+        'model_type': model_type,
+        'search_term': search_term,
+        'prompt': getActivePrompt().value,
+        'neg_prompt': ''
+    })
+    event.stopPropagation()
+    event.preventDefault()
+}
+
+function use_preview_prompt(event, model_type, search_term) {
+    send_ch_py_msg('ch_js_use_preview_prompt_btn', {
+        'action': 'use_preview_prompt',
+        'model_type': model_type,
+        'search_term': search_term,
+        'prompt': getActivePrompt().value,
+        'neg_prompt': getActivePrompt(1).value
+    })
+    event.stopPropagation()
+    event.preventDefault()
+}
+
+async function delete_model(evt, model_type, search_term) {
+    evt.stopPropagation()
+    if (!confirm(`Confirm delete: \n${search_term} ??`)) return
+
+    let card = evt.target.closest('.card')
+    let cover = card.firstElementChild.src
+    new Image().src = cover
+    
+    send_ch_py_msg('ch_js_delete_model_btn', {
+        'action': 'delete_model',
+        'model_type': model_type,
+        'search_term': search_term
+    })
+    // Check response msg from python
+    let new_py_msg = await get_new_ch_py_msg()
+    if (new_py_msg) {
+        // let py_msg_json = JSON.parse(new_py_msg)
+        // if (!py_msg_json.result) return notice('Delete failed: ' + py_msg_json)
+        notice({
+            body: `Model deleted: ${search_term.substr(1)}`,
+            image: cover,
+            icon: cover,
+            time: 5
+        })
+        let card = evt.target.closest('.card')
+        card.parentNode.removeChild(card)
+    }
+}
+
+// download model's new version into SD at python side
+function ch_dl_model_new_version(event, model_path, version_id, download_url) {
+    // must confirm before downloading
+    if (!confirm('Confirm to download.\n\nCheck Download Model Section\'s log and console log for detail.')) return
+
+    send_ch_py_msg('ch_js_dl_model_new_version_btn', {
+        action: 'dl_model_new_version',
+        model_path: model_path,
+        version_id: version_id,
+        download_url: download_url
+    })
+    event.stopPropagation()
+    event.preventDefault()
+}
+
+function createAdditionalBtn(props) {
+    let el = createEl('a','ch-action')
+    Object.assign(el, props)
+    el.setAttribute('onclick', props.onclick)
+    return el
+}
+
+function addHelperBtn(tab_prefix) {
+    let tab_nav = $(`#${tab_prefix}_extra_tabs > .tab-nav`)
+    if (!tab_nav) {
+        return setTimeout(addHelperBtn, 999, tab_prefix)
+    }
+    createEl('label', 'gradio-button custom-button tool', {
+        title: 'Download missing model info and preview image',
+        innerText: '🖼️'
+    }, tab_nav).setAttribute('for', 'ch_scan_model_civitai_btn')
+}
+
+function update_card(card, model_type) {
+
+    let additional_node = card.querySelector('.additional')
+    if (additional_node.childElementCount >= 4) {
+        // console.log('buttons already added, just quit')
+        return
+    }
+
+    let search_term = card.querySelector('.search_term')?.innerText
+    if (!search_term) {
+        return
+    }
+
+    let btns = [{
+        innerHTML: '🌐',
+        title: 'Open this model\'s civitai url',
+        onclick: 'open_model_url(event, \'' + model_type + '\', \'' + search_term + '\')'
+    }, {
+        innerHTML: '💡',
+        title: 'Add trigger words to prompt',
+        onclick: 'add_trigger_words(event, \'' + model_type + '\', \'' + search_term + '\')'
+    }, {
+        innerHTML: '🪞',
+        title: 'Use prompt from preview image',
+        onclick: 'use_preview_prompt(event, \'' + model_type + '\', \'' + search_term + '\')'
+    }, {
+        innerHTML: '🗑️',
+        title: 'Delete model',
+        onclick: 'delete_model(event, \'' + model_type + '\', \'' + search_term + '\')',
+    }]
+
+    for (let btn of btns) {
+        additional_node.appendChild(createAdditionalBtn(btn))
+    }
+}
+
+// fast pasete civitai model url and trigger model info loading
+async function check_clipboard() {
+    let text = await navigator.clipboard.readText()
+    let el = document.querySelector('#model_download_url_txt')
+    let textarea = el.querySelector('textarea')
+    if (text.startsWith('https://civitai.com/models/')) {
+        if (textarea.value == text) {
+            let version = $id('ch_dl_all_ckb').previousElementSibling.querySelector('input')
+            if (version.value) {
+                $id('ch_download_btn')?.click()
+            }
+            return
+        }
+        textarea.value = text
+        updateInput(textarea)
+    }
+    textarea.value && el.querySelector('button').click()
+}
+
+async function fetch_info() {
+    let text = await navigator.clipboard.readText()
+    let el = document.querySelector('#ch_info_url')
+    let ipt = el.querySelector('textarea')
+    ipt.value = text
+    updateInput(ipt)
+    el.parentElement.nextElementSibling.click()
+}
+
+const model_type_mapping = {
+    'textual_inversion': 'ti',
+    'hypernetworks': 'hyper',
+    'checkpoints': 'ckp',
+    'lora': 'lora'
+}
+
+function listenToCardHover() {
+    let elems = $$('.extra-networks-html')
+    if (elems.length == 0) {
+        return setTimeout(listenToCardHover, 999)
+    }
+    for (let el of elems) {
+        let arr = el.id.split('_')
+        arr.shift()
+        arr.pop()
+        let model_type = model_type_mapping[arr.join('_')]
+        el.on('mouseover', e => {
+            if (e.target.className == 'actions')  {
+                update_card(e.target, model_type)
+            }
+        })
+    }
+}
+
+onUiLoaded(() => {
+    ['txt2img', 'img2img'].forEach(addHelperBtn)
+    listenToCardHover()
+})
+
+on('keydown', e => {
+    if (isEditable(e.target) || uiCurrentTab?.innerText != 'Civitai Helper') return
+    switch (e.key) {
+        case 'f': fetch_info()
+            break
+        case 'x': check_clipboard()
+    }
+})
