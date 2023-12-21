@@ -11,8 +11,6 @@ from . import downloader
 # scan model to generate SHA256, then use this SHA256 to get model info from civitai
 # return output msg
 def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
-    output = ""
-
     # check model types
     if not scan_model_types:
         output = "Model Types is None, can not scan."
@@ -21,7 +19,7 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
 
     model_types = []
     # check type if it is a string
-    if type(scan_model_types) == str:
+    if type(scan_model_types) is str:
         model_types.append(scan_model_types)
     else:
         model_types = scan_model_types
@@ -52,17 +50,17 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
                     info_file = base + model.info_ext
                     # check info file
                     if not os.path.isfile(info_file):
-                        util.printD("Creating model info: " + util.shorten_path(filepath))
+                        util.printD("Creating info: " + util.shorten_path(filepath))
                         # get model's sha256
-                        hash = util.gen_file_sha256(filepath)
+                        sha256 = util.gen_file_sha256(filepath)
 
-                        if not hash:
+                        if not sha256:
                             output = "failed generating SHA256 for model:" + filename
                             util.printD(output)
                             return output
 
                         # use this sha256 to get model info from civitai
-                        model_info = civitai.get_model_info_by_hash(hash)
+                        model_info = civitai.get_model_info_by_hash(sha256)
                         # if model_type == "ti": time.sleep(delay)
 
                         if model_info is None:
@@ -92,7 +90,6 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
 # Get model info by model type, name and url
 # output is log info to display on markdown component
 def get_model_info_by_input(model_type, model_name, model_url_or_id, max_size_preview, skip_nsfw_preview):
-    output = ""
     # parse model id
     model_id, modelVersionId = civitai.get_model_id_from_url(model_url_or_id)
     if not model_id and not modelVersionId:
@@ -145,13 +142,12 @@ def check_models_new_version_to_md(model_types: list) -> str:
     new_versions = civitai.check_models_new_version_by_model_types(model_types, 2)
 
     count = 0
-    output = ""
     if not new_versions:
         output = "No model has new version"
     else:
         output = "Found new version for following models:  <br>"
         for new_version in new_versions:
-            count = count + 1
+            count += 1
             model_path, model_id, model_name, new_verion_id, new_version_name, description, download_url, img_url = new_version
             # in md, each part is something like this:
             # [model_name](model_url)
@@ -160,27 +156,27 @@ def check_models_new_version_to_md(model_types: list) -> str:
             url = civitai.url_dict["modelPage"] + str(model_id)
 
             part = f'<div style="font-size:20px;margin:6px 0px;"><b>Model: <a href="{url}" target="_blank"><u>{model_name}</u></a></b></div>'
-            part = part + f'<div style="font-size:16px">File: {model_path}</div>'
+            part += f'<div style="font-size:16px">File: {model_path}</div>'
             if download_url:
                 # replace "\" to "/" in model_path for windows
                 model_path = model_path.replace('\\', '\\\\')
-                part = part + f'<div style="font-size:16px;margin:6px 0px;">New Version: <u><a href="{download_url}" target="_blank" style="margin:0px 10px;">{new_version_name}</a></u>'
+                part += f'<div style="font-size:16px;margin:6px 0px;">New Version: <u><a href="{download_url}" target="_blank" style="margin:0px 10px;">{new_version_name}</a></u>'
                 # add js function to download new version into SD webui by python
-                part = part + "    "
+                part += "    "
                 # in embed HTML, onclick= will also follow a ", never a ', so have to write it as following
-                part = part + f"<u><a href='#' style='margin:0px 10px;' onclick=\"ch_dl_model_new_version(event, '{model_path}', '{new_verion_id}', '{download_url}')\">[Download into SD]</a></u>"
+                part += f"<u><a href='#' style='margin:0px 10px;' onclick=\"ch_dl_model_new_version(event, '{model_path}', '{new_verion_id}', '{download_url}')\">[Download into SD]</a></u>"
 
             else:
-                part = part + f'<div style="font-size:16px;margin:6px 0px;">New Version: {new_version_name}'
-            part = part + '</div>'
+                part += f'<div style="font-size:16px;margin:6px 0px;">New Version: {new_version_name}'
+            part += '</div>'
 
             # description
             if description:
-                part = part + '<blockquote style="font-size:16px;margin:6px 0px;">' + description + '</blockquote><br>'
+                part += '<blockquote style="font-size:16px;margin:6px 0px;">' + description + '</blockquote><br>'
 
             # preview image            
             if img_url:
-                part = part + f"<img src='{img_url}'><br>"
+                part += f"<img src='{img_url}'><br>"
 
             output = output + part
 
@@ -261,8 +257,8 @@ def get_model_info_by_url(model_url_or_id: str):
 
     util.printD(f"model_info: [{model_type}]: {model_name}")
     util.printD(f"versions: {versions}")
-    
-    return (model_info, model_name, model_type, subfolders, versions)
+
+    return model_info, model_name, model_type, subfolders, versions
 
 
 # get version info by version string
@@ -366,14 +362,13 @@ def get_id_and_dl_url_by_version_str(version_str: str, model_info: dict):
 
     util.printD("Get Download Url: " + downloadUrl)
 
-    return (version_id, downloadUrl)
+    return version_id, downloadUrl
 
 
 # download model from civitai by input
 # output to markdown log
-def dl_model_by_input(model_info: dict, model_type: str, subfolder_str: str, version_str: str, dl_all_bool: bool, max_size_preview: bool, skip_nsfw_preview: bool) -> str:
-    output = ""
-
+def dl_model_by_input(model_info: dict, model_type: str, subfolder_str: str, version_str: str, dl_all_bool: bool,
+                      max_size_preview: bool, skip_nsfw_preview: bool) -> str:
     if not model_info:
         output = "model_info is None"
         util.printD(output)
@@ -445,7 +440,7 @@ def dl_model_by_input(model_info: dict, model_type: str, subfolder_str: str, ver
             output = "Fail to get version info, check console log for detail"
             util.printD(output)
             return output
-        
+
         url = ver_info["downloadUrl"]
         if not url:
             output = "Fail to get download url, check console log for detail"
@@ -484,3 +479,36 @@ def save_info_and_preview_image(filepath: str, version_info: dict, max_size_prev
     util.printD(output)
 
     return output
+
+# delete model file by model type and search_term
+# parameter: model_type, search_term
+# return: delete result
+def delete_model_by_search_term(model_type: str, search_term: str):
+    if model_type not in model.folders.keys():
+        util.printD(f"unknow model type: {model_type}")
+        return
+
+    # search_term = subfolderpath + model name + ext. And it always start with a / even there is no sub folder
+    base_name, ext = os.path.splitext(search_term)
+    if base_name[:1] == "/":
+        base_name = base_name[1:].replace("/", os.path.sep)
+
+    # find 4 kinds of files: .info, .safetensor and .priview.jpeg .json
+    model_folder = model.folders[model_type]
+    model_info_filepath = os.path.join(model_folder, base_name + model.info_ext)
+    model_conf_filepath = os.path.join(model_folder, base_name + model.conf_ext)
+    model_filename = os.path.normpath(model_folder + search_term)
+
+    # del model preview image
+    for ext in model.preview_extensions:
+        preview_filepath = os.path.join(model_folder, base_name + ".preview." + ext)
+        if os.path.isfile(preview_filepath):
+            os.remove(preview_filepath)
+            util.printD(f"Deleted: {util.shorten_path(preview_filepath)}")
+
+    for filepath in [model_info_filepath, model_conf_filepath, model_filename]:
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+            util.printD(f"Deleted: {util.shorten_path(filepath)}")
+
+    return True

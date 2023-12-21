@@ -5,7 +5,7 @@
 // msg is an object, not a string, will be stringify in this function
 function send_ch_py_msg(id, msg) {
     // Get hidden components of extension
-    let btn = app.getElementById(id)
+    let btn = $id(id)
     if (!btn) return
 
     // Fill the message box
@@ -22,8 +22,7 @@ function send_ch_py_msg(id, msg) {
 // get msg from python side from a hidden textbox
 // normally this is an old msg, need to wait for a new msg
 function get_ch_py_msg() {
-    let py_msg_txtbox = $('#ch_py_msg_txtbox textarea')
-    return py_msg_txtbox?.value
+    return $('#ch_py_msg_txtbox textarea')?.value
 }
 
 // get msg from python side from a hidden textbox
@@ -50,7 +49,7 @@ function get_new_ch_py_msg(max_count = 9) {
 }
 
 function getActivePrompt(neg) {
-    let tab = uiCurrentTab.innerText
+    let tab = uiCurrentTab
     if (neg) tab += '_neg'
     return get_uiCurrentTabContent().querySelector(`#${tab}_prompt textarea`)
 }
@@ -218,10 +217,10 @@ async function check_clipboard() {
 
 async function fetch_info() {
     let text = await navigator.clipboard.readText()
-    let el = document.querySelector('#ch_info_url')
-    let ipt = el.querySelector('textarea')
-    ipt.value = text
-    updateInput(ipt)
+    let el = $('#ch_info_url')
+    let textarea = $('textarea', el)
+    textarea.value = text
+    updateInput(textarea)
     el.parentElement.nextElementSibling.click()
 }
 
@@ -256,7 +255,7 @@ onUiLoaded(() => {
 })
 
 on('keydown', e => {
-    if (isEditable(e.target) || uiCurrentTab?.innerText != 'Civitai Helper') return
+    if (isEditable(e.target) || uiCurrentTab != 'Civitai Helper') return
     switch (e.key) {
         case 'f': fetch_info()
             break

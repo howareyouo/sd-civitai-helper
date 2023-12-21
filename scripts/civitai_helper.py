@@ -7,17 +7,13 @@ import gradio as gr
 import os
 import modules
 from modules import script_callbacks
-from modules import shared
 from modules.ui_components import ToolButton
-from scripts.ch_lib import model
-from scripts.ch_lib import js_action_civitai
-from scripts.ch_lib import model_action_civitai
-from scripts.ch_lib import setting
-from scripts.ch_lib import civitai
-from scripts.ch_lib import util
-
-
-# init
+from scripts.libs import model_action
+from scripts.libs import js_action
+from scripts.libs import setting
+from scripts.libs import civitai
+from scripts.libs import model
+from scripts.libs import util
 
 # root path
 root_path = os.getcwd()
@@ -37,7 +33,6 @@ def on_ui_tabs():
     # }
     # init_py_msg_str = json.dumps(init_py_msg)
 
-
     # get prompt textarea
     # check modules/ui.py, search for txt2img_paste_fields
     # Negative prompt is the second element
@@ -53,7 +48,7 @@ def on_ui_tabs():
 
 
     def get_model_info_by_url(url):
-        r = model_action_civitai.get_model_info_by_url(url)
+        r = model_action.get_model_info_by_url(url)
 
         model_info = {}
         model_name = ""
@@ -158,31 +153,31 @@ def on_ui_tabs():
 
         # ====events====
         # Scan Models for Civitai
-        scan_model_civitai_btn.click(model_action_civitai.scan_model, inputs=[scan_model_types_ckbg, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=scan_model_log_md)
+        scan_model_civitai_btn.click(model_action.scan_model, inputs=[scan_model_types_ckbg, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=scan_model_log_md)
 
         # Get Civitai Model Info by Model Page URL
         model_type_drop.change(get_model_names_by_input, inputs=[model_type_drop, empty_info_only_ckb], outputs=model_name_drop)
         empty_info_only_ckb.change(get_model_names_by_input, inputs=[model_type_drop, empty_info_only_ckb], outputs=model_name_drop)
         refresh_model_no_info.click(get_model_names_by_input, inputs=[model_type_drop, empty_info_only_ckb], outputs=model_name_drop)
 
-        get_civitai_model_info_by_id_btn.click(model_action_civitai.get_model_info_by_input, inputs=[model_type_drop, model_name_drop, model_url_or_id_txtbox, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=get_model_by_id_log_md)
+        get_civitai_model_info_by_id_btn.click(model_action.get_model_info_by_input, inputs=[model_type_drop, model_name_drop, model_url_or_id_txtbox, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=get_model_by_id_log_md)
 
         # Download Model
         dl_model_info_btn.click(get_model_info_by_url, inputs=dl_model_url_or_id_txtbox, outputs=[dl_model_info, dl_model_name_txtbox, dl_model_type_txtbox, dl_subfolder_drop, dl_version_drop])
-        dl_civitai_model_by_id_btn.click(model_action_civitai.dl_model_by_input, inputs=[dl_model_info, dl_model_type_txtbox, dl_subfolder_drop, dl_version_drop, dl_all_ckb, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=dl_log_md)
+        dl_civitai_model_by_id_btn.click(model_action.dl_model_by_input, inputs=[dl_model_info, dl_model_type_txtbox, dl_subfolder_drop, dl_version_drop, dl_all_ckb, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=dl_log_md)
 
         # Check models' new version
-        check_models_new_version_btn.click(model_action_civitai.check_models_new_version_to_md, inputs=model_types_ckbg, outputs=check_models_new_version_log_md)
+        check_models_new_version_btn.click(model_action.check_models_new_version_to_md, inputs=model_types_ckbg, outputs=check_models_new_version_log_md)
 
         # Other Setting
         save_setting_btn.click(setting.save_from_input, inputs=[max_size_preview_ckb, skip_nsfw_preview_ckb, open_url_with_js_ckb], outputs=general_log_md)
 
         # js action
-        js_open_url_btn.click(js_action_civitai.open_model_url, inputs=[js_msg_txtbox], outputs=py_msg_txtbox)
-        js_add_trigger_words_btn.click(js_action_civitai.add_trigger_words, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, img2img_prompt])
-        js_use_preview_prompt_btn.click(js_action_civitai.use_preview_image_prompt, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, txt2img_neg_prompt, img2img_prompt, img2img_neg_prompt])
-        js_use_delete_model_btn.click(js_action_civitai.delete_model, inputs=[js_msg_txtbox], outputs=[py_msg_txtbox])
-        js_dl_model_new_version_btn.click(js_action_civitai.dl_model_new_version, inputs=[js_msg_txtbox, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=dl_log_md)
+        js_open_url_btn.click(js_action.open_model_url, inputs=[js_msg_txtbox], outputs=py_msg_txtbox)
+        js_add_trigger_words_btn.click(js_action.add_trigger_words, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, img2img_prompt])
+        js_use_preview_prompt_btn.click(js_action.use_preview_image_prompt, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, txt2img_neg_prompt, img2img_prompt, img2img_neg_prompt])
+        js_use_delete_model_btn.click(js_action.delete_model, inputs=[js_msg_txtbox], outputs=[py_msg_txtbox])
+        js_dl_model_new_version_btn.click(js_action.dl_model_new_version, inputs=[js_msg_txtbox, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=dl_log_md)
 
     # the third parameter is the element id on html, with a "tab_" as prefix
     return (civitai_helper , "Civitai Helper", "civitai_helper"),

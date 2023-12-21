@@ -4,14 +4,13 @@ import io
 import hashlib
 import requests
 import shutil
-from . import util
 
 def_headers = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
-version = "1.6.4"
+version = "1.6.6"
 
 
 # print for debugging
-def printD(msg, end = None):
+def printD(msg, end=None):
     print(f"[Civitai Helper] {msg}", end=end)
 
 
@@ -23,6 +22,7 @@ def read_chunks(file, size=io.DEFAULT_BUFFER_SIZE):
             break
         yield chunk
 
+
 # Now, hashing use the same way as pip's source code.
 def gen_file_sha256(filname):
     blocksize = 1 << 20
@@ -33,38 +33,39 @@ def gen_file_sha256(filname):
             length += len(block)
             h.update(block)
 
-    hash_value =  h.hexdigest()
-    printD(f"sha256: {hash_value} [{util.hr_size(length)}]")
+    hash_value = h.hexdigest()
+    # printD(f"sha256: {hash_value} [{hr_size(length)}]")
     return hash_value
 
 
 # get preview image
 def download_file(url, path):
-    printD("Downloading: " + url)
+    # printD("Downloading: " + url)
     # get file
     r = requests.get(url, stream=True, headers=def_headers)
     if not r.ok:
         printD("Get error code: " + str(r.status_code))
         printD(r.text)
         return
-    
+
     # write to file
     with open(os.path.realpath(path), 'wb') as f:
         r.raw.decode_content = True
         shutil.copyfileobj(r.raw, f)
+        
+    return path
 
-    printD("File saved: " + util.shorten_path(path))
 
 # get subfolder list
-def get_subfolders(folder:str):
+def get_subfolders(folder: str):
     if not folder:
         printD("folder can not be None")
         return
-    
+
     if not os.path.isdir(folder):
         printD("path is not a folder")
         return
-    
+
     prefix_len = len(folder)
     subfolders = []
     for root, dirs, files in os.walk(folder, followlinks=True):
@@ -78,7 +79,7 @@ def get_subfolders(folder:str):
 
 
 # get relative path
-def get_relative_path(item_path:str, parent_path:str) -> str:
+def get_relative_path(item_path: str, parent_path: str) -> str:
     # item path must start with parent_path
     if not item_path:
         return ""
@@ -94,12 +95,14 @@ def get_relative_path(item_path:str, parent_path:str) -> str:
     # printD("relative:"+relative)
     return relative
 
+
 # get relative path
-def shorten_path(filepath:str) -> str:
+def shorten_path(filepath: str) -> str:
     mi = filepath.find("models" + os.sep)
     if mi >= 0:
         return filepath[mi + 7:]
     return filepath
+
 
 # human readable size format
 def hr_size(size, decimal_places=2):

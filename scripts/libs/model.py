@@ -2,9 +2,8 @@
 # handle msg between js and python side
 import os
 import json
-from . import util
 from modules import shared
-
+from . import util
 
 # this is the default root path
 root_path = os.getcwd()
@@ -18,9 +17,10 @@ folders = {
     "ckp": os.path.join(root_path, "models", "Stable-diffusion"),
     "lora": os.path.join(root_path, "models", "Lora")
 }
-
+preview_extensions = ["png", "jpg", "jpeg", "webp", "gif", "mp4"]
 exts = (".bin", ".pt", ".safetensors", ".ckpt")
 info_ext = ".info"
+conf_ext = ".json"
 vae_suffix = ".vae"
 
 
@@ -41,10 +41,9 @@ def get_custom_model_folder():
         folders["lora"] = shared.cmd_opts.lora_dir
 
 
-
 # write model info to file
 def write_model_info(filepath, model_info):
-    util.printD("Write model info: " + util.shorten_path(filepath))
+    # util.printD("Write model info: " + util.shorten_path(filepath))
     with open(os.path.realpath(filepath), 'w') as f:
         f.write(json.dumps(model_info, indent=4))
 
@@ -59,14 +58,14 @@ def load_model_info(path):
             util.printD("Selected file is not json: " + path)
             util.printD(e)
             return
-        
+
     return model_info
 
 
 # get model file names by model type
 # parameter: model_type - string
 # return: model name list
-def get_model_names_by_type(model_type:str) -> list:
+def get_model_names_by_type(model_type: str) -> list:
     model_folder = folders[model_type]
 
     # get information from filter
@@ -85,15 +84,15 @@ def get_model_names_by_type(model_type:str) -> list:
 
 
 # return 2 values: (model_root, model_path)
-def get_model_path_by_type_and_name(model_type:str, model_name:str):
+def get_model_path_by_type_and_name(model_type: str, model_name: str):
     if model_type not in folders.keys():
         util.printD("unknown model_type: " + model_type)
         return
-    
+
     if not model_name:
         util.printD("model name can not be empty")
         return
-    
+
     folder = folders[model_type]
 
     # model could be in subfolder, need to walk.
@@ -108,4 +107,3 @@ def get_model_path_by_type_and_name(model_type:str, model_name:str):
                 return (model_root, model_path)
 
     return
-

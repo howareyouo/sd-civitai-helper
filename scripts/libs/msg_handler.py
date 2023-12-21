@@ -5,7 +5,7 @@ from . import util
 
 # action list
 js_actions = ("open_url", "add_trigger_words", "use_preview_prompt", "delete_model", "dl_model_new_version")
-py_actions = ("open_url")
+py_actions = "open_url"
 
 
 # handle request from javascript
@@ -15,7 +15,7 @@ def parse_js_msg(msg):
     msg_dict = json.loads(msg)
 
     # in case client side run JSON.stringify twice
-    if (type(msg_dict) == str):
+    if type(msg_dict) is str:
         msg_dict = json.loads(msg_dict)
 
     if "action" not in msg_dict.keys():
@@ -37,11 +37,11 @@ def parse_js_msg(msg):
 # build python side msg for sending to js
 # parameter: content dict
 # return: msg as string, to fill into a hidden textbox
-def build_py_msg(action:str, content:dict):
+def build_py_msg(action: str, content: dict):
     if not content:
         util.printD("Content is None")
         return
-    
+
     if not action:
         util.printD("Action is None")
         return
@@ -50,9 +50,7 @@ def build_py_msg(action:str, content:dict):
         util.printD("Unknow action: " + action)
         return
 
-    msg = {
-        "action" : action,
+    return json.dumps({
+        "action": action,
         "content": content
-    }
-
-    return json.dumps(msg)
+    })

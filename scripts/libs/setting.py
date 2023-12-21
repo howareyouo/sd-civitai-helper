@@ -5,7 +5,6 @@ import os
 import modules.scripts as scripts
 from . import util
 
-
 name = "setting.json"
 path = os.path.join(scripts.basedir(), name)
 
@@ -24,12 +23,12 @@ def save():
     json_data = json.dumps(data, indent=4)
 
     output = ""
-    #write to file
+    # write to file
     try:
         with open(path, 'w') as f:
             f.write(json_data)
     except Exception as e:
-        util.printD("Error when writing file:"+path)
+        util.printD("Error when writing file:" + path)
         output = str(e)
         util.printD(str(e))
         return output
@@ -61,6 +60,7 @@ def load():
     data = json_data
 
     return
+
 
 # save setting from parameter
 def save_from_input(max_size_preview, skip_nsfw_preview, open_url_with_js):

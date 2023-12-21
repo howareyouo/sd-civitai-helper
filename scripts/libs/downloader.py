@@ -62,7 +62,7 @@ def dl(url, folder, filename, filepath):
     # write to file
     with open(dl_filepath, "ab") as f:
         # sys.stdout.reconfigure(encoding='utf-8')
-        
+
         for chunk in response.iter_content(chunk_size=4096):
             downloaded_size += len(chunk)
             f.write(chunk)
@@ -71,7 +71,8 @@ def dl(url, folder, filename, filepath):
             terminal_size = os.get_terminal_size().columns - 8
             ratio = downloaded_size / total_size
             progress = int(100 * ratio)
-            sys.stdout.write("\r%d%%|%s%s|" % (progress, '█' * int(ratio * terminal_size), ' ' * int((1 - ratio) * terminal_size)))
+            sys.stdout.write(
+                "\r%d%%|%s%s|" % (progress, '█' * int(ratio * terminal_size), ' ' * int((1 - ratio) * terminal_size)))
             sys.stdout.flush()
     print()
 
@@ -84,6 +85,7 @@ def dl(url, folder, filename, filepath):
     os.rename(dl_filepath, filepath)
     util.printD(f"File save to: {filepath}")
     return filepath
+
 
 def resolve_dl_filepath(base, ext, filepath):
     # check if file is already exist
@@ -109,6 +111,7 @@ def get_size_and_name(url):
     server_filename = filename_from_content_disposition(cd)
 
     return server_filename, total_size, cd
+
 
 def filename_from_content_disposition(cd):
     """
