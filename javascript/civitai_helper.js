@@ -142,10 +142,11 @@ function ch_dl_model_new_version(event, model_path, version_id, download_url) {
     event.preventDefault()
 }
 
-function createAdditionalBtn(props) {
+function createAdditionalBtn(props, parent) {
     let el = createEl('a','ch-action')
     Object.assign(el, props)
     el.setAttribute('onclick', props.onclick)
+    parent && parent.appendChild(el)
     return el
 }
 
@@ -161,38 +162,21 @@ function addHelperBtn(tab_prefix) {
 }
 
 function update_card(card, model_type) {
-
-    let additional_node = card.querySelector('.additional')
-    if (additional_node.childElementCount >= 4) {
-        // console.log('buttons already added, just quit')
-        return
-    }
+    let additionalEl = card.querySelector('.additional')
+    if (additionalEl.childElementCount >= 4) return
 
     let search_term = card.querySelector('.search_term')?.innerText
-    if (!search_term) {
-        return
-    }
+    if (!search_term) return
 
-    let btns = [{
-        innerHTML: '🌐',
-        title: 'Open this model\'s civitai url',
-        onclick: 'open_model_url(event, \'' + model_type + '\', \'' + search_term + '\')'
-    }, {
-        innerHTML: '💡',
-        title: 'Add trigger words to prompt',
-        onclick: 'add_trigger_words(event, \'' + model_type + '\', \'' + search_term + '\')'
-    }, {
-        innerHTML: '🪞',
-        title: 'Use prompt from preview image',
-        onclick: 'use_preview_prompt(event, \'' + model_type + '\', \'' + search_term + '\')'
-    }, {
-        innerHTML: '🗑️',
-        title: 'Delete model',
-        onclick: 'delete_model(event, \'' + model_type + '\', \'' + search_term + '\')',
-    }]
-
+    let args = `event, "${model_type}", "${search_term}"`
+    let btns = [
+        {innerHTML: '🌐', title: 'Open in Civitai', onclick: 'open_model_url(' + args + ')'},
+        {innerHTML: '💡', title: 'Add trigger words to prompt', onclick: 'add_trigger_words(' + args + ')'},
+        {innerHTML: '🪞', title: 'Use prompt from preview image', onclick: 'use_preview_prompt(' + args + ')'},
+        {innerHTML: '🗑️', title: 'Delete model', onclick: 'delete_model(' + args + ')'}
+    ]
     for (let btn of btns) {
-        additional_node.appendChild(createAdditionalBtn(btn))
+        createAdditionalBtn(btn, additionalEl)
     }
 }
 
