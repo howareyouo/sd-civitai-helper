@@ -4,8 +4,9 @@ import os
 import time
 import re
 import requests
-from . import util
+from . import downloader
 from . import model
+from . import util
 
 url_dict = {
     "downloadPrefix": "https://civitai.com/api/download/models/",
@@ -324,7 +325,7 @@ def get_preview_image_by_model_path(model_path: str, max_size_preview, skip_nsfw
         img_url = img_dict["url"]
         if img_url:
             img_url = get_full_size_image_url(img_url, img_dict["width"])
-            preview_path = util.download_file(img_url, image_preview)
+            preview_path = downloader.download(img_url, image_preview)
             util.printD("Preview saved: " + util.shorten_path(preview_path))
             # we only need 1 preview image
             break

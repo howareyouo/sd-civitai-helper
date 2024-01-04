@@ -1,14 +1,36 @@
 # -*- coding: UTF-8 -*-
-import requests
-import time
 import sys
 import os
+import shutil
+import requests
+from requests.adapters import HTTPAdapter, Retry
 from . import util
 
 dl_ext = ".downloading"
 
 # disable ssl warning info
 requests.packages.urllib3.disable_warnings()
+retry = Retry(connect=5, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504])
+adapter = HTTPAdapter(max_retries=retry)
+
+# output is downloaded file path
+def download(url, path):
+    session = requests.Session()
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    # printD("Downloading: " + url)
+    r = session.get(url, verify=False, stream=True, headers=util.def_headers)
+    if not r.ok:
+        util.printD("Requests error: " + str(r.status_code), r.text)
+        return
+
+    # write to file
+    with open(os.path.realpath(path), 'wb') as f:
+        r.raw.decode_content = True
+        shutil.copyfileobj(r.raw, f)
+        
+    return path
 
 
 # output is downloaded file path
@@ -56,7 +78,11 @@ def dl(url, folder, filename, filepath):
             headers['Range'] = f"bytes={downloaded_size}-"
             util.printD(f"Downloaded size: {util.hr_size(downloaded_size)}")
 
-    response = requests.get(url, stream=True, timeout=10, headers=headers)
+    session = requests.Session()
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    response = session.get(url, verify=False, stream=True, timeout=10, headers=headers)
     response.raise_for_status()
 
     # write to file
@@ -104,7 +130,10 @@ def resolve_dl_filepath(base, ext, filepath):
 
 def get_size_and_name(url):
     # first request for header
-    r = requests.get(url, stream=True, headers=util.def_headers)
+    session = requests.Session()
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    r = session.get(url, stream=True, headers=util.def_headers)
     # get file size
     total_size = int(r.headers['Content-Length'])
     cd = r.headers["Content-Disposition"]

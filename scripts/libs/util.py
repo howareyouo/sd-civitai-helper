@@ -2,8 +2,6 @@
 import os
 import io
 import hashlib
-import requests
-import shutil
 
 def_headers = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
 version = "1.6.6"
@@ -36,24 +34,6 @@ def gen_file_sha256(filname):
     hash_value = h.hexdigest()
     # printD(f"sha256: {hash_value} [{hr_size(length)}]")
     return hash_value
-
-
-# get preview image
-def download_file(url, path):
-    # printD("Downloading: " + url)
-    # get file
-    r = requests.get(url, stream=True, headers=def_headers)
-    if not r.ok:
-        printD("Get error code: " + str(r.status_code))
-        printD(r.text)
-        return
-
-    # write to file
-    with open(os.path.realpath(path), 'wb') as f:
-        r.raw.decode_content = True
-        shutil.copyfileobj(r.raw, f)
-        
-    return path
 
 
 # get subfolder list
@@ -98,9 +78,9 @@ def get_relative_path(item_path: str, parent_path: str) -> str:
 
 # get relative path
 def shorten_path(filepath: str) -> str:
-    mi = filepath.find("models" + os.sep)
-    if mi >= 0:
-        return filepath[mi + 7:]
+    idx = filepath.find("models" + os.sep)
+    if idx >= 0:
+        return filepath[idx + 7:]
     return filepath
 
 

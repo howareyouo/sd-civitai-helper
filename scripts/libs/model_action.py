@@ -1,12 +1,11 @@
 # -*- coding: UTF-8 -*-
 # handle msg between js and python side
-import os
-import time
+import glob, os
 from . import util
 from . import model
 from . import civitai
 from . import downloader
-
+from colorama import Fore
 
 # scan model to generate SHA256, then use this SHA256 to get model info from civitai
 # return output msg
@@ -80,7 +79,7 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
 
     # scan_log = "Done"
 
-    output = f"Done. Scanned {model_count} models, checked {image_count} images"
+    output = f"{Fore.LIGHTGREEN_EX}Done. Scanned {model_count} models, checked {image_count} images"
 
     util.printD(output)
 
@@ -490,25 +489,14 @@ def delete_model_by_search_term(model_type: str, search_term: str):
 
     # search_term = subfolderpath + model name + ext. And it always start with a / even there is no sub folder
     base_name, ext = os.path.splitext(search_term)
-    if base_name[:1] == "/":
+    if base_name[0] == "/":
         base_name = base_name[1:].replace("/", os.path.sep)
 
-    # find 4 kinds of files: .info, .safetensor and .priview.jpeg .json
+    # find files with base_name
     model_folder = model.folders[model_type]
-    model_info_filepath = os.path.join(model_folder, base_name + model.info_ext)
-    model_conf_filepath = os.path.join(model_folder, base_name + model.conf_ext)
-    model_filename = os.path.normpath(model_folder + search_term)
-
-    # del model preview image
-    for ext in model.preview_extensions:
-        preview_filepath = os.path.join(model_folder, base_name + ".preview." + ext)
-        if os.path.isfile(preview_filepath):
-            os.remove(preview_filepath)
-            util.printD(f"Deleted: {util.shorten_path(preview_filepath)}")
-
-    for filepath in [model_info_filepath, model_conf_filepath, model_filename]:
-        if os.path.isfile(filepath):
-            os.remove(filepath)
-            util.printD(f"Deleted: {util.shorten_path(filepath)}")
+    path_prefix = os.path.join(model_folder, base_name) + ".*"
+    for filepath in glob.glob(path_prefix):
+        os.remove(filepath)
+        util.printD(f"Deleted: {util.shorten_path(filepath)}")
 
     return True
