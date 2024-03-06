@@ -3,6 +3,7 @@
 import os
 import json
 import webbrowser
+import subprocess
 from . import util
 from . import model
 from . import civitai
@@ -14,15 +15,7 @@ from . import setting
 # get civitai's model url and open it in browser
 # parameter: model_type, search_term
 # output: python msg - will be sent to hidden textbox then picked by js side
-def open_model_url(msg, open_url_with_js=False):
-    result = msg_handler.parse_js_msg(msg)
-    if not result:
-        util.printD("Parsing js ms failed")
-        return
-
-    model_type = result["model_type"]
-    search_term = result["search_term"]
-
+def open_model_url(model_type, search_term, open_url_with_js=False):
     model_info = civitai.load_model_info_by_search_term(model_type, search_term)
     if not model_info:
         util.printD(f"Failed to get model info for {model_type} {search_term}")
@@ -39,7 +32,7 @@ def open_model_url(msg, open_url_with_js=False):
 
     model_version_id = model_info["id"]
     url = civitai.url_dict["modelPage"] + str(model_id) + "?modelVersionId=" + str(model_version_id)
-
+    
     open_url_with_js = setting.data["open_url_with_js"]
 
     output = ""
@@ -56,16 +49,7 @@ def open_model_url(msg, open_url_with_js=False):
 # add trigger words to prompt
 # parameter: model_type, search_term, prompt
 # return: [new_prompt, new_prompt] - new prompt with trigger words, return twice for txt2img and img2img
-def add_trigger_words(msg):
-    result = msg_handler.parse_js_msg(msg)
-    if not result:
-        util.printD("Parsing js ms failed")
-        return
-
-    model_type = result["model_type"]
-    search_term = result["search_term"]
-    prompt = result["prompt"]
-
+def add_trigger_words(model_type, search_term, prompt):
     model_info = civitai.load_model_info_by_search_term(model_type, search_term)
     if not model_info:
         util.printD(f"Failed to get model info for {model_type} {search_term}")
@@ -98,17 +82,7 @@ def add_trigger_words(msg):
 # use preview image's prompt as prompt
 # parameter: model_type, model_name, prompt, neg_prompt
 # return: [new_prompt, new_neg_prompt, new_prompt, new_neg_prompt,] - return twice for txt2img and img2img
-def use_preview_image_prompt(msg):
-    result = msg_handler.parse_js_msg(msg)
-    if not result:
-        util.printD("Parsing js ms failed")
-        return
-
-    model_type = result["model_type"]
-    search_term = result["search_term"]
-    prompt = result["prompt"]
-    neg_prompt = result["neg_prompt"]
-
+def use_preview_prompt(model_type, search_term, prompt, neg_prompt):
     model_info = civitai.load_model_info_by_search_term(model_type, search_term)
     if not model_info:
         util.printD(f"Failed to get model info for {model_type} {search_term}")
@@ -230,14 +204,34 @@ def dl_model_new_version(msg, max_size_preview, skip_nsfw_preview):
     util.printD(output)
     return output
 
+def open_model_folder(model_filepath):
+    subprocess.Popen(f'explorer /select, "{model_filepath}"')
+    return
 
-def delete_model(msg):
+
+def do_action(msg):
     result = msg_handler.parse_js_msg(msg)
     if not result:
         util.printD("Parsing js ms failed")
         return
-
+    
     model_type = result["model_type"]
     search_term = result["search_term"]
-    result = model_action.delete_model_by_search_term(model_type, search_term)
+    action = result["action"]
+
+    if action == "add_trigger_words":
+        return add_trigger_words(model_type, search_term, result["prompt"])
+    
+    elif action == "use_preview_prompt":
+        return use_preview_prompt(model_type, search_term, result["prompt"], result["neg_prompt"])
+
+    elif action == "open_model_url":
+        result = open_model_url(model_type, search_term)
+
+    elif action == "delete_model":
+        result = model_action.delete_model_by_search_term(model_type, search_term)
+    
+    elif action == "open_model_folder":
+        result = open_model_folder(result["model_filepath"])
+
     return json.dumps({"result": result})

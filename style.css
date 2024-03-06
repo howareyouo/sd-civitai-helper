@@ -19,3 +19,7 @@ blockquote ol {
 .ch-action:hover {
     filter: brightness(1.25) hue-rotate(90deg)
 }
+.ch-fetch.tool {
+    --tool-button-size: 2em;
+    align-self: center;
+}
