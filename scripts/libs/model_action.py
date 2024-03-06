@@ -5,7 +5,9 @@ from . import util
 from . import model
 from . import civitai
 from . import downloader
-from colorama import Fore
+from colorama import init, Fore
+
+init(autoreset=True)
 
 # scan model to generate SHA256, then use this SHA256 to get model info from civitai
 # return output msg
@@ -500,3 +502,4 @@ def delete_model_by_search_term(model_type: str, search_term: str):
         util.printD(f"Deleted: {util.shorten_path(filepath)}")
 
     return True
+

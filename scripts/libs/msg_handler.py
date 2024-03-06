@@ -3,11 +3,6 @@
 import json
 from . import util
 
-# action list
-js_actions = ("open_url", "add_trigger_words", "use_preview_prompt", "delete_model", "dl_model_new_version")
-py_actions = "open_url"
-
-
 # handle request from javascript
 # parameter: msg - msg from js as string in a hidden textbox
 # return: dict for result
@@ -27,10 +22,6 @@ def parse_js_msg(msg):
         util.printD("Action from js request is None")
         return
 
-    if action not in js_actions:
-        util.printD("Unknow action: " + action)
-        return
-
     return msg_dict
 
 
@@ -44,10 +35,6 @@ def build_py_msg(action: str, content: dict):
 
     if not action:
         util.printD("Action is None")
-        return
-
-    if action not in py_actions:
-        util.printD("Unknow action: " + action)
         return
 
     return json.dumps({

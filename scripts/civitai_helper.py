@@ -145,11 +145,10 @@ def on_ui_tabs():
         js_msg_txtbox = gr.Textbox(label="Request Msg From Js", visible=False, lines=1, elem_id="ch_js_msg_txtbox")
         py_msg_txtbox = gr.Textbox(label="Response Msg From Python", visible=False, lines=1, elem_id="ch_py_msg_txtbox")
 
-        js_open_url_btn = gr.Button(value="Open Model Url", visible=False, elem_id="ch_js_open_url_btn")
         js_add_trigger_words_btn = gr.Button(value="Add Trigger Words", visible=False, elem_id="ch_js_add_trigger_words_btn")
         js_use_preview_prompt_btn = gr.Button(value="Use Prompt from Preview Image", visible=False, elem_id="ch_js_use_preview_prompt_btn")
-        js_use_delete_model_btn = gr.Button(value="Delete Model", visible=False, elem_id="ch_js_delete_model_btn")
         js_dl_model_new_version_btn = gr.Button(value="Download Model's new version", visible=False, elem_id="ch_js_dl_model_new_version_btn")
+        js_action_btn = gr.Button(value="JS Action", visible=False, elem_id="ch_js_action_btn")
 
         # ====events====
         # Scan Models for Civitai
@@ -172,11 +171,10 @@ def on_ui_tabs():
         # Other Setting
         save_setting_btn.click(setting.save_from_input, inputs=[max_size_preview_ckb, skip_nsfw_preview_ckb, open_url_with_js_ckb], outputs=general_log_md)
 
-        # js action
-        js_open_url_btn.click(js_action.open_model_url, inputs=[js_msg_txtbox], outputs=py_msg_txtbox)
-        js_add_trigger_words_btn.click(js_action.add_trigger_words, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, img2img_prompt])
-        js_use_preview_prompt_btn.click(js_action.use_preview_image_prompt, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, txt2img_neg_prompt, img2img_prompt, img2img_neg_prompt])
-        js_use_delete_model_btn.click(js_action.delete_model, inputs=[js_msg_txtbox], outputs=[py_msg_txtbox])
+        # js actions
+        js_action_btn.click(js_action.do_action, inputs=[js_msg_txtbox], outputs=[py_msg_txtbox])
+        js_add_trigger_words_btn.click(js_action.do_action, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, img2img_prompt])
+        js_use_preview_prompt_btn.click(js_action.do_action, inputs=[js_msg_txtbox], outputs=[txt2img_prompt, txt2img_neg_prompt, img2img_prompt, img2img_neg_prompt])
         js_dl_model_new_version_btn.click(js_action.dl_model_new_version, inputs=[js_msg_txtbox, max_size_preview_ckb, skip_nsfw_preview_ckb], outputs=dl_log_md)
 
     # the third parameter is the element id on html, with a "tab_" as prefix

@@ -19,3 +19,19 @@ blockquote ol {
 .ch-action:hover {
     filter: brightness(1.25) hue-rotate(90deg)
 }
+.gradio-button.tool{
+    border-radius: var(--button-large-radius);
+    padding: var(--button-large-padding);
+    font-weight: var(--button-large-text-weight);
+    background: var(--button-secondary-background-fill);
+    color: var(--button-secondary-text-color);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    transition: var(--button-transition);
+    box-shadow: var(--button-shadow);
+    cursor: pointer;
+}
+.align-center {
+    align-self: center !important
+}
