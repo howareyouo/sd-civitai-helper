@@ -22,4 +22,5 @@ blockquote ol {
 .ch-fetch.tool {
     --tool-button-size: 2em;
     align-self: center;
+    margin-left: .5em;
 }
