@@ -236,19 +236,17 @@ const model_type_mapping = {
 }
 
 function listenToCardHover() {
-    let elems = $$('.extra-page')
-    if (elems.length == 0) {
+    let pages = $$('.extra-page')
+    if (pages.length == 0) {
         return setTimeout(listenToCardHover, 999)
     }
-    for (let el of elems) {
-        el.on('mouseover', e => {
-            let tar = e.target
-            if (tar.className == 'actions')  {
-                let arr = tar.closest('.gradio-html').id.split('_')
-                arr.shift()
-                arr.pop()
+    for (let page of pages) {
+        page.on('mouseover', e => {
+            let el = e.target
+            if (el.className == 'actions')  {
+                let arr = el.closest('.gradio-html').id.split('_').slice(1, -1)
                 let model_type = model_type_mapping[arr.join('_')]
-                update_card(tar, model_type)
+                update_card(el, model_type)
             }
         })
     }
