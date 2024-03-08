@@ -6,7 +6,6 @@ import hashlib
 def_headers = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
 version = "1.6.6"
 
-
 # print for debugging
 def printD(msg, end=None):
     print(f"[Civitai Helper] {msg}", end=end)
@@ -77,12 +76,8 @@ def get_relative_path(item_path: str, parent_path: str) -> str:
 
 
 # get relative path
-def shorten_path(filepath: str) -> str:
-    idx = filepath.find("models" + os.sep)
-    if idx >= 0:
-        return filepath[idx + 7:]
-    return filepath
-
+def shorten(filepath: str) -> str:
+    return os.path.relpath(filepath, "models")
 
 # human readable size format
 def hr_size(size, decimal_places=2):

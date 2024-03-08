@@ -51,7 +51,7 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
                     info_file = base + model.info_ext
                     # check info file
                     if not os.path.isfile(info_file):
-                        util.printD("Creating info: " + util.shorten_path(filepath))
+                        util.printD("Creating info: " + util.shorten(filepath))
                         # get model's sha256
                         sha256 = util.gen_file_sha256(filepath)
 
@@ -476,7 +476,7 @@ def save_info_and_preview_image(filepath: str, version_info: dict, max_size_prev
     # then, get preview image
     civitai.get_preview_image_by_model_path(filepath, max_size_preview, skip_nsfw_preview)
 
-    output = "Done, model save to: " + util.shorten_path(filepath)
+    output = "Done, model save to: " + util.shorten(filepath)
     util.printD(output)
 
     return output
@@ -499,7 +499,7 @@ def delete_model_by_search_term(model_type: str, search_term: str):
     path_prefix = os.path.join(model_folder, base_name) + ".*"
     for filepath in glob.glob(path_prefix):
         os.remove(filepath)
-        util.printD(f"Deleted: {util.shorten_path(filepath)}")
+        util.printD(f"Deleted: {util.shorten(filepath)}")
 
     return True
 

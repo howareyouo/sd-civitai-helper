@@ -23,4 +23,5 @@ blockquote ol {
     --tool-button-size: 2em;
     align-self: center;
     margin-left: .5em;
+    font-size: 1rem;
 }

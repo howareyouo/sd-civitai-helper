@@ -17,7 +17,7 @@ folders = {
     "lora": os.path.join(root_path, "models", "Lora"),
     "ti": os.path.join(root_path, "models", "embeddings")
 }
-preview_extensions = ["png", "jpg", "jpeg", "webp", "gif", "mp4"]
+preview_extensions = ["mp4", "gif", "png", "jpg", "jpeg", "webp"]
 exts = (".bin", ".pt", ".safetensors", ".ckpt")
 info_ext = ".info"
 conf_ext = ".json"

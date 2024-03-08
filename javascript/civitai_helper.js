@@ -22,6 +22,8 @@ async function notice(options) {
     }
 }
 
+function CivitaiHelper(options) {
+}
 // send msg to python side by filling a hidden text box
 // then will click a button to trigger an action
 // msg is an object, not a string, will be stringify in this function
@@ -51,22 +53,19 @@ function get_ch_py_msg() {
 // it will try once in every sencond, until it reach the max try times
 function get_new_ch_py_msg(max_count = 9) {
     return new Promise((resolve, reject) => {
-        let msg_txtbox = $('#ch_py_msg_txtbox textarea')
-        let new_msg = ''
-        let count = 0, interval = setInterval(() => {
-            if (msg_txtbox && msg_txtbox.value)
-                new_msg = msg_txtbox.value
-            if (new_msg || ++count > max_count) {
-                clearInterval(interval)
-                // clear msg in both sides (client & server)
-                msg_txtbox.value = ''
-                updateInput(msg_txtbox)
-                if (new_msg)
-                    resolve(new_msg)
-                else
-                    reject('')
+        let msgbox = $('#ch_py_msg_txtbox textarea'), count = 0
+        function check() {
+            let new_msg = msgbox?.value
+            if (new_msg) {
+                updateInput(msgbox, '') // clear msg in both sides (client & server)
+                resolve(new_msg)
+            } else if (++count < max_count) {
+                setTimeout(check, 333)
+            } else {
+                reject('max retry exceeded')
             }
-        }, 333)
+        }
+        check()
     })
 }
 
@@ -79,27 +78,26 @@ function getActivePrompt(neg) {
 // button's click function
 async function open_model_url(evt, model_type, search_term) {
     evt.stopPropagation()
-    evt.preventDefault()
     try {
         send_ch_py_msg('ch_js_action_btn', {
             action: 'open_model_url',
             search_term,
             model_type
         })
-        let new_py_msg = await get_new_ch_py_msg();
+        let new_py_msg = await get_new_ch_py_msg()
         if (new_py_msg) {
             const py_msg_json = JSON.parse(new_py_msg);
             if (py_msg_json && py_msg_json.content && py_msg_json.content.url) {
                 open(py_msg_json.content.url, '_blank')
             }
         }
-    } catch (e) { }
+    } catch (e) {
+        console.err(e)
+    }
 }
 
 async function open_model_folder(evt, model_type, search_term) {
     evt.stopPropagation()
-    evt.preventDefault()
-    console.log(evt.target.closest('.card').dataset.sortPath)
     try {
         send_ch_py_msg('ch_js_action_btn', {
             action: 'open_model_folder',
@@ -122,7 +120,7 @@ async function delete_model(evt, model_type, search_term) {
     let card = evt.target.closest('.card')
     let cover = card.firstElementChild.src
     new Image().src = cover
-    
+
     send_ch_py_msg('ch_js_action_btn', {
         'action': 'delete_model',
         'model_type': model_type,
@@ -137,8 +135,7 @@ async function delete_model(evt, model_type, search_term) {
             icon: cover,
             time: 5
         })
-        let card = evt.target.closest('.card')
-        card.parentNode.removeChild(card)
+        evt.target.closest('.card').remove()
     }
 }
 

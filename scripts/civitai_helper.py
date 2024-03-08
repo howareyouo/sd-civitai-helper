@@ -97,10 +97,10 @@ def on_ui_tabs():
             gr.Markdown("### Get Model Info from Civitai by URL")
             gr.Markdown("Use this when scanning can not find a local model on civitai")
             with gr.Row():
-                model_type_drop = gr.Dropdown(choices=model_types, label="Model Type", value="ckp", multiselect=False, allow_custom_value=False)
-                empty_info_only_ckb = gr.Checkbox(label="Only Show Models have no Info", value=False, elem_id="ch_empty_info_only_ckb")
+                model_type_drop = gr.Dropdown(choices=model_types, label="Model Type", show_label=False, value="ckp", multiselect=False, allow_custom_value=False)
+                empty_info_only_ckb = gr.Checkbox(label="Only Show Models have no Info", elem_id="ch_empty_info_only_ckb")
                 refresh_model_no_info = ToolButton(value="🔄")
-                model_name_drop = gr.Dropdown(choices=no_info_model_names, label="Model", value="ckp", multiselect=False)
+                model_name_drop = gr.Dropdown(choices=no_info_model_names, label="Model", show_label=False, value="ckp", multiselect=False)
             with gr.Row():
                 model_url_or_id_txtbox = gr.Textbox(placeholder="Civitai URL", show_label=False, elem_id="ch_info_url")
                 get_civitai_model_info_by_id_btn = gr.Button(value="Get Model Info from Civitai", variant="primary")
@@ -114,11 +114,11 @@ def on_ui_tabs():
 
             gr.Markdown(value="<b>2. Pick Subfolder and Model Version</b>")
             with gr.Row():
-                dl_model_name_txtbox = gr.Textbox(label="Model Name", interactive=False, elem_id="ch_model_name")
-                dl_model_type_txtbox = gr.Textbox(label="Model Type", interactive=False)
-                dl_subfolder_drop = gr.Dropdown(label="Sub-folder", interactive=True, multiselect=False, elem_id="ch_subfolder")
-                dl_version_drop = gr.Dropdown(label="Model Version", interactive=True, multiselect=False)
-                dl_all_ckb = gr.Checkbox(label="Download All files", value=False, elem_id="ch_dl_all_ckb")
+                dl_model_name_txtbox = gr.Textbox(placeholder="Model Name", interactive=False, elem_id="ch_model_name", show_label=False)
+                dl_model_type_txtbox = gr.Textbox(placeholder="Model Type", interactive=False, show_label=False)
+                dl_subfolder_drop = gr.Dropdown(placeholder="Sub-folder", interactive=True, multiselect=False, elem_id="ch_subfolder", show_label=False)
+                dl_version_drop = gr.Dropdown(placeholder="Model Version", interactive=True, multiselect=False, show_label=False)
+                dl_all_ckb = gr.Checkbox(label="Download All files", elem_id="ch_dl_all_ckb")
             with gr.Row():
                 dl_civitai_model_by_id_btn = gr.Button(value="3. Download Model", elem_id="ch_download_btn", variant="primary")
             dl_log_md = gr.Markdown(value="Check Console log for Downloading Status")

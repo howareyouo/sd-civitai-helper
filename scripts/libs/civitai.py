@@ -295,12 +295,11 @@ def get_preview_image_by_model_path(model_path: str, max_size_preview, skip_nsfw
         return
 
     base, ext = os.path.splitext(model_path)
-    for ext in ["mp4", "png", "jpg", "jpeg", "webp"]:
-        image_preview = base + ".preview." + ext
-        if os.path.isfile(image_preview):
+    for ext in model.preview_extensions:
+        if os.path.isfile(base + ".preview." + ext) or os.path.isfile(base + "." + ext):
             return
 
-    short_path = util.shorten_path(model_path)
+    short_path = util.shorten(model_path)
     # util.printD("Missing preview: " + short_path)
 
     # load model_info file
@@ -319,16 +318,15 @@ def get_preview_image_by_model_path(model_path: str, max_size_preview, skip_nsfw
             util.printD("Skip NSFW image")
             continue
 
-        if img_dict["type"] == "video":
-            image_preview = os.path.splitext(image_preview)[0] + '.mp4'
+        # if img_dict["type"] == "video": image_preview = base + '.mp4'
 
         img_url = img_dict["url"]
         if img_url:
+            image_preview = base + os.path.splitext(img_url)[1]
             img_url = get_full_size_image_url(img_url, img_dict["width"])
             preview_path = downloader.download(img_url, image_preview)
-            util.printD("Preview saved: " + util.shorten_path(preview_path))
-            # we only need 1 preview image
-            break
+            util.printD("Preview saved: " + util.shorten(preview_path))
+            break # we only need 1 preview image
 
 
 # search local model by version id in 1 folder, no subfolder
@@ -510,7 +508,7 @@ def check_models_new_version_by_model_types(model_types: list, delay: float = 2)
         if model_type not in mts:
             continue
 
-        util.printD("Scanning path: " + util.shorten_path(model_folder))
+        util.printD("Scanning path: " + util.shorten(model_folder))
         for root, dirs, files in os.walk(model_folder, followlinks=True):
             for filename in files:
                 # check ext

@@ -61,7 +61,7 @@ def dl(url, folder, filename, filepath):
     filepath = os.path.join(folder, filename)
 
     util.printD(f"File size: {util.hr_size(total_size)}")
-    util.printD("Target file: " + util.shorten_path(filepath))
+    util.printD("Target file: " + util.shorten(filepath))
     base, ext = os.path.splitext(filepath)
 
     dl_filepath, filepath = resolve_dl_filepath(base, ext, filepath)
@@ -118,7 +118,7 @@ def resolve_dl_filepath(base, ext, filepath):
     count = 2
     new_base = base
     while os.path.isfile(filepath):
-        util.printD("File exists: " + util.shorten_path(filepath))
+        util.printD("File exists: " + util.shorten(filepath))
         # re-name
         new_base = base + "_" + str(count)
         filepath = new_base + ext
