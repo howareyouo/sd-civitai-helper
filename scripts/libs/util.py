@@ -2,6 +2,7 @@
 import os
 import io
 import hashlib
+from colorama import Fore
 
 def_headers = {'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'}
 version = "1.6.6"
@@ -77,7 +78,7 @@ def get_relative_path(item_path: str, parent_path: str) -> str:
 
 # get relative path
 def shorten(filepath: str) -> str:
-    return os.path.relpath(filepath, "models")
+    return Fore.YELLOW + os.path.relpath(filepath, "models") + Fore.RESET
 
 # human readable size format
 def hr_size(size, decimal_places=2):

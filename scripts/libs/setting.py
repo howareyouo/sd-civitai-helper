@@ -14,17 +14,15 @@ data = {
     "open_url_with_js": False,
 }
 
-
 # save setting
 # return output msg for log
 def save():
     print("Saving setting to: " + path)
 
     json_data = json.dumps(data, indent=4)
-
     output = ""
-    # write to file
     try:
+        # write to file
         with open(path, 'w') as f:
             f.write(json_data)
     except Exception as e:
@@ -45,7 +43,7 @@ def load():
     global data
 
     if not os.path.isfile(path):
-        # util.printD("No setting file, use default")
+        util.printD("No setting file, use default")
         return
 
     json_data = None
@@ -58,8 +56,6 @@ def load():
         return
 
     data = json_data
-
-    return
 
 
 # save setting from parameter

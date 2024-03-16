@@ -22,8 +22,6 @@ async function notice(options) {
     }
 }
 
-function CivitaiHelper(options) {
-}
 // send msg to python side by filling a hidden text box
 // then will click a button to trigger an action
 // msg is an object, not a string, will be stringify in this function
@@ -60,7 +58,7 @@ function get_new_ch_py_msg(max_count = 9) {
                 updateInput(msgbox, '') // clear msg in both sides (client & server)
                 resolve(new_msg)
             } else if (++count < max_count) {
-                setTimeout(check, 333)
+                setTimeout(check, 111)
             } else {
                 reject('max retry exceeded')
             }
@@ -72,7 +70,7 @@ function get_new_ch_py_msg(max_count = 9) {
 function getActivePrompt(neg) {
     let tab = uiCurrentTab
     if (neg) tab += '_neg'
-    return get_uiCurrentTabContent().querySelector(`#${tab}_prompt textarea`)
+    return get_uiCurrentTabContent().one(`#${tab}_prompt textarea`)
 }
 
 // button's click function
@@ -86,31 +84,30 @@ async function open_model_url(evt, model_type, search_term) {
         })
         let new_py_msg = await get_new_ch_py_msg()
         if (new_py_msg) {
-            const py_msg_json = JSON.parse(new_py_msg);
-            if (py_msg_json && py_msg_json.content && py_msg_json.content.url) {
-                open(py_msg_json.content.url, '_blank')
+            let {url, open_url_with_js} = JSON.parse(new_py_msg)
+            if (url) {
+                let el = evt.target
+                el.href = url
+                el.target = '_blank'
+                el.removeAttribute("onclick")
+                if (open_url_with_js) {
+                    open(url, '_blank')
+                }
             }
         }
     } catch (e) {
-        console.err(e)
+        console.error(e)
     }
 }
 
 async function open_model_folder(evt, model_type, search_term) {
     evt.stopPropagation()
-    try {
-        send_ch_py_msg('ch_js_action_btn', {
-            action: 'open_model_folder',
-            model_filepath: evt.target.closest('.card').dataset.sortPath,
-            model_type,
-            search_term
-        })
-        let new_py_msg = await get_new_ch_py_msg();
-        if (new_py_msg) {
-            const py_msg_json = JSON.parse(new_py_msg);
-            console.log(py_msg_json)
-        }
-    } catch (e) { }
+    send_ch_py_msg('ch_js_action_btn', {
+        action: 'open_model_folder',
+        model_filepath: evt.target.closest('.card').dataset.sortPath,
+        model_type,
+        search_term
+    })
 }
 
 async function delete_model(evt, model_type, search_term) {
@@ -178,30 +175,11 @@ function ch_dl_model_new_version(event, model_path, version_id, download_url) {
     event.preventDefault()
 }
 
-function createAdditionalBtn(props, parent) {
-    let el = createEl('a','ch-action')
-    Object.assign(el, props)
-    el.setAttribute('onclick', props.onclick)
-    parent && parent.appendChild(el)
-    return el
-}
-
-function addHelperBtn(tab_prefix) {
-    let tab_nav = $(`#${tab_prefix}_extra_tabs > .tab-nav`)
-    if (!tab_nav) {
-        return setTimeout(addHelperBtn, 999, tab_prefix)
-    }
-    createEl('label', 'gradio-button tool ch-fetch', {
-        title: 'Fetch missing model info and preview',
-        innerText: '🖼️'
-    }, tab_nav).setAttribute('for', 'ch_scan_model_civitai_btn')
-}
-
 // fast pasete civitai model url and trigger model info loading
 async function check_clipboard() {
     let text = await navigator.clipboard.readText()
-    let el = document.querySelector('#model_download_url_txt')
-    let textarea = el.querySelector('textarea')
+    let el = $('#model_download_url_txt')
+    let textarea = $('textarea', el)
     if (text.startsWith('https://civitai.com/models/')) {
         if (textarea.value == text) {
             let version = _('ch_dl_all_ckb').previousElementSibling.querySelector('input')
@@ -210,18 +188,16 @@ async function check_clipboard() {
             }
             return
         }
-        textarea.value = text
-        updateInput(textarea)
+        updateInput(textarea, text)
     }
-    textarea.value && el.querySelector('button').click()
+    textarea.value && $('button', el).click()
 }
 
 async function fetch_info() {
     let text = await navigator.clipboard.readText()
     let el = $('#ch_info_url')
     let textarea = $('textarea', el)
-    textarea.value = text
-    updateInput(textarea)
+    updateInput(textarea, text)
     el.parentElement.nextElementSibling.click()
 }
 
@@ -265,9 +241,21 @@ function update_card(card, model_type) {
         {innerHTML: '🗑️', title: 'Delete model', onclick: 'delete_model(' + args + ')'}
     ]
     for (let btn of btns) {
-        createAdditionalBtn(btn, additionalEl)
+        createElement('a','ch-action', btn, additionalEl)
     }
 }
+
+function addHelperBtn(tab_prefix) {
+    let tab_nav = $(`#${tab_prefix}_extra_tabs > .tab-nav`)
+    if (!tab_nav) {
+        return setTimeout(addHelperBtn, 999, tab_prefix)
+    }
+    createElement('label', 'gradio-button tool ch-fetch', {
+        title: 'Fetch missing model info and preview',
+        innerText: '⇊' // 🖼️
+    }, tab_nav).setAttribute('for', 'ch_scan_model_civitai_btn')
+}
+
 
 onUiLoaded(() => {
     ['txt2img', 'img2img'].forEach(addHelperBtn)

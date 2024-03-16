@@ -26,13 +26,7 @@ setting.load()
 
 
 def on_ui_tabs():
-    # init
-    # init_py_msg = {
-    #     # relative extension path
-    #     "extension_path": util.get_relative_path(extension_path, root_path),
-    # }
-    # init_py_msg_str = json.dumps(init_py_msg)
-
+    
     # get prompt textarea
     # check modules/ui.py, search for txt2img_paste_fields
     # Negative prompt is the second element

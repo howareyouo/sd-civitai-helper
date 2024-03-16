@@ -34,16 +34,12 @@ def open_model_url(model_type, search_term, open_url_with_js=False):
     url = civitai.url_dict["modelPage"] + str(model_id) + "?modelVersionId=" + str(model_version_id)
     
     open_url_with_js = setting.data["open_url_with_js"]
-
-    output = ""
-    if open_url_with_js:
-        output = msg_handler.build_py_msg("open_url", {"url": url})
-    else:
-        util.printD("Open Url: " + url)
+    if not open_url_with_js:
+        util.printD("Open model url: " + url)
         # open url
         webbrowser.open_new_tab(url)
 
-    return output
+    return msg_handler.build_py_msg("open_model_url", {"url": url, "open_url_with_js": open_url_with_js})
 
 
 # add trigger words to prompt
@@ -220,10 +216,10 @@ def do_action(msg):
     action = result["action"]
 
     if action == "add_trigger_words":
-        return add_trigger_words(model_type, search_term, result["prompt"])
+        result =  add_trigger_words(model_type, search_term, result["prompt"])
     
     elif action == "use_preview_prompt":
-        return use_preview_prompt(model_type, search_term, result["prompt"], result["neg_prompt"])
+        result =  use_preview_prompt(model_type, search_term, result["prompt"], result["neg_prompt"])
 
     elif action == "open_model_url":
         result = open_model_url(model_type, search_term)
@@ -234,4 +230,4 @@ def do_action(msg):
     elif action == "open_model_folder":
         result = open_model_folder(result["model_filepath"])
 
-    return json.dumps({"result": result})
+    return result

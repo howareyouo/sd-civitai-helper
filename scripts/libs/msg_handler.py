@@ -37,7 +37,5 @@ def build_py_msg(action: str, content: dict):
         util.printD("Action is None")
         return
 
-    return json.dumps({
-        "action": action,
-        "content": content
-    })
+    content["action"] = action
+    return json.dumps(content)

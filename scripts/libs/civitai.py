@@ -322,8 +322,13 @@ def get_preview_image_by_model_path(model_path: str, max_size_preview, skip_nsfw
 
         img_url = img_dict["url"]
         if img_url:
-            image_preview = base + os.path.splitext(img_url)[1]
-            img_url = get_full_size_image_url(img_url, img_dict["width"])
+            ext = os.path.splitext(img_url)[1]
+            if img_dict["type"] == "video":
+                ext = ".mp4"
+            else:
+                img_url = get_full_size_image_url(img_url, img_dict["width"])
+
+            image_preview = base + ext
             preview_path = downloader.download(img_url, image_preview)
             util.printD("Preview saved: " + util.shorten(preview_path))
             break # we only need 1 preview image

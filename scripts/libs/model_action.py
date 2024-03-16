@@ -81,9 +81,9 @@ def scan_model(scan_model_types, max_size_preview, skip_nsfw_preview, delay=1):
 
     # scan_log = "Done"
 
-    output = f"{Fore.LIGHTGREEN_EX}Done. Scanned {model_count} models, checked {image_count} images"
+    output = f"Done. Scanned {model_count} models, checked {image_count} images"
 
-    util.printD(output)
+    util.printD(Fore.LIGHTGREEN_EX + output)
 
     return output
 
