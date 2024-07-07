@@ -314,11 +314,8 @@ def get_preview_image_by_model_path(model_path: str, max_size_preview, skip_nsfw
     images = model_info["images"]
     if not images: return
     for img_dict in images:
-        if img_dict["nsfw"] and skip_nsfw_preview:
-            util.printD("Skip NSFW image")
+        if (img_dict.get("nsfw", False) or img_dict.get("nsfwLevel", 1) > 4) and skip_nsfw_preview: 
             continue
-
-        # if img_dict["type"] == "video": image_preview = base + '.mp4'
 
         img_url = img_dict["url"]
         if img_url:
@@ -330,6 +327,8 @@ def get_preview_image_by_model_path(model_path: str, max_size_preview, skip_nsfw
 
             image_preview = base + ext
             preview_path = downloader.download(img_url, image_preview)
+            if not preview_path:
+                continue
             util.printD("Preview saved: " + util.shorten(preview_path))
             break # we only need 1 preview image
 
